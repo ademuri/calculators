@@ -40,6 +40,7 @@
         <td>Length per string, ft</td>
         <td># of strings</td>
         <td>Total length</td>
+        <td>Est. temp, F</td>
       </thead>
       <tbody id="outputs-body">
 
@@ -203,6 +204,13 @@ const nichrome_60_temp_to_current = new Map([
   ])],
 ]);
 
+const nichrome_60_current_to_temp = new Map();
+for (const [gauge, map] of nichrome_60_temp_to_current.entries()) {
+  const newMap = new Map();
+  map.forEach((value, key) => newMap.set(value, key));
+  nichrome_60_current_to_temp.set(gauge, newMap);
+}
+
 const currentInput = document.getElementById('current-input');
 const voltageInput = document.getElementById('voltage-input');
 const maxTempInput = document.getElementById('max-temp-input');
@@ -271,10 +279,13 @@ function updateTable(event) {
     const numStrings = Math.round(current / maxCurrentPerString + 0.5);
     const requiredResistance = voltage / current * numStrings;
     const length = requiredResistance / resistance;
+    const currentPerString = voltage / (length * resistance);
+    const temp = lerp(nichrome_60_current_to_temp.get(gauge), currentPerString);
     row.insertCell().appendChild(document.createTextNode(gauge));
     row.insertCell().appendChild(document.createTextNode(length.toFixed(1)));
     row.insertCell().appendChild(document.createTextNode(numStrings));
     row.insertCell().appendChild(document.createTextNode((length * numStrings).toFixed(1)));
+    row.insertCell().appendChild(document.createTextNode((temp).toFixed(0)));
   }
 }
 
